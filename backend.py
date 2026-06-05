@@ -16,7 +16,7 @@ st.markdown("""
     .block-container { padding-top: 2rem; max-width: 1100px; }
     
     /* Box putih untuk membagi seksi (White & Silver) */
-    .white-box { background-color: #FFFFFF; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(45,49,66,0.08); margin-top: 15px; margin-bottom: 20px; border: 1px solid #BFC0C0; color: #2D3142;}
+    .white-box { background-color: #FFFFFF; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(45,49,66,0.08); margin-bottom: 20px; border: 1px solid #BFC0C0; color: #2D3142;}
     
     /* Konfigurasi Tabs menu */
     .stTabs [data-baseweb="tab-list"] { justify-content: center; gap: 30px; border-bottom: 2px solid #BFC0C0; background-color: #FFFFFF; padding: 10px; border-radius: 10px; }
@@ -28,7 +28,7 @@ st.markdown("""
     .white-box li { color: #4F5D75; } 
     
     /* Hero Section Header */
-    .hero-title { font-size: 3.2rem; font-weight: 900; color: #2D3142 !important; line-height: 1.2; margin-bottom: 15px; text-align: center; }
+    .hero-title { font-size: 3.2rem; font-weight: 900; color: #2D3142 !important; line-height: 1.2; margin-top: 15px; margin-bottom: 15px; text-align: center; }
     .hero-title span { color: #EF8354 !important; }
     .hero-subtitle { font-size: 1.2rem; color: #4F5D75 !important; font-weight: 500; text-align: center; margin-bottom: 30px;}
     
