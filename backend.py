@@ -283,18 +283,18 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
     
     # FORM TAMBAH LAUK BARU
     with st.expander("➕ Tambah Menu Makanan / Lauk Baru Custom"):
-        st.write("Masukkan detail bahan makanan baru untuk dimasukkan ke dalam daftar kalkulasi:")
+        st.write("Masukkan detail bahan makanan baru (kandungan gizi diisi berdasarkan takaran **per 100 gram**):")
         c_nama, c_harga = st.columns([2, 1])
         with c_nama:
             nama_baru = st.text_input("Nama Makanan / Lauk Baru:", placeholder="Contoh: Daging Sapi, Tahu, Ikan Kembung")
         with c_harga:
-            harga_baru = st.number_input("Harga per Gram (Rp):", min_value=0.0, value=15.0, step=1.0)
+            harga_baru = st.number_input("Harga per 100g (Rp):", min_value=0.0, value=1500.0, step=100.0)
             
         g1, g2, g3, g4 = st.columns(4)
-        with g1: kalori_baru = st.number_input("Kalori (Kkal/g):", min_value=0.0, value=2.5, step=0.1)
-        with g2: protein_baru = st.number_input("Protein (g/g):", min_value=0.0, value=0.2, step=0.01)
-        with g3: lemak_baru = st.number_input("Lemak (g/g):", min_value=0.0, value=0.1, step=0.01)
-        with g4: karbo_baru = st.number_input("Karbohidrat (g/g):", min_value=0.0, value=0.0, step=0.01)
+        with g1: kalori_baru = st.number_input("Kalori (Kkal/100g):", min_value=0.0, value=150.0, step=1.0)
+        with g2: protein_baru = st.number_input("Protein (g/100g):", min_value=0.0, value=10.0, step=1.0)
+        with g3: lemak_baru = st.number_input("Lemak (g/100g):", min_value=0.0, value=5.0, step=1.0)
+        with g4: karbo_baru = st.number_input("Karbo (g/100g):", min_value=0.0, value=0.0, step=1.0)
             
         if st.button(" Masukkan Makanan ke Daftar", type="primary"):
             if nama_baru.strip() != "":
@@ -337,7 +337,8 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                      # 1. Baris Atas Card: Edit Nama Lauk & Tombol Centang
                          c_nama, c_aktif = st.columns([3, 1])
                          with c_nama:
-                             # UBAH NAMA LANGSUNG DI CARD MENGGUNAKAN TEXT INPUT
+                             # TAMPILAN LABEL NAMA SEDIKIT DIBEDAKAN AGAR TERLIHAT SEPERTI JUDUL
+                             st.markdown("<div style='font-size:0.85rem; font-weight:bold; color:#EF8354; margin-bottom:-8px;'>📝 Nama Bahan Makanan:</div>", unsafe_allow_html=True)
                              edit_nama = st.text_input("Nama Lauk", value=row['Bahan Makanan'], key=f"nama_{idx_bahan}", label_visibility="collapsed")
                              st.session_state['database_bahan'].at[idx_bahan, "Bahan Makanan"] = edit_nama
                          with c_aktif:
@@ -355,12 +356,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                          c_pop, c_del = st.columns([4, 1])
                          with c_pop:
                              with st.popover("📋 Detail & Edit", use_container_width=True):
-                                 st.markdown(f"#### 🧪 Nilai Gizi {row['Bahan Makanan']}")
-                                 edit_harga = st.number_input(f"Harga (Rp)", min_value=0, value=int(row["Harga (Rp)"]), key=f"hrg_{idx_bahan}")
-                                 edit_kalori = st.number_input(f"Kalori (Kkal)", min_value=0.0, value=float(row["Kalori (Kkal)"]), key=f"kal_{idx_bahan}")
-                                 edit_protein = st.number_input(f"Protein (g)", min_value=0.0, value=float(row["Protein (g)"]), key=f"pro_{idx_bahan}")
-                                 edit_lemak = st.number_input(f"Lemak (g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{idx_bahan}")
-                                 edit_karbo = st.number_input(f"Karbohidrat (g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{idx_bahan}")
+                                 st.markdown(f"#### 🧪 Nilai Gizi per 100 gram")
+                                 edit_harga = st.number_input(f"Harga per 100g (Rp)", min_value=0, value=int(row["Harga (Rp)"]), key=f"hrg_{idx_bahan}")
+                                 edit_kalori = st.number_input(f"Kalori (Kkal/100g)", min_value=0.0, value=float(row["Kalori (Kkal)"]), key=f"kal_{idx_bahan}")
+                                 edit_protein = st.number_input(f"Protein (g/100g)", min_value=0.0, value=float(row["Protein (g)"]), key=f"pro_{idx_bahan}")
+                                 edit_lemak = st.number_input(f"Lemak (g/100g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{idx_bahan}")
+                                 edit_karbo = st.number_input(f"Karbohidrat (g/100g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{idx_bahan}")
                                  
                                  st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp)"] = edit_harga
                                  st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal)"] = edit_kalori
@@ -369,9 +370,13 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                                  st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g)"] = edit_karbo
                          
                          with c_del:
-                             # TOMBOL HAPUS: Membersihkan langsung dari memory database
+                             # TOMBOL HAPUS DENGAN CLEAR CACHE WIDGET STREAMLIT
                              if st.button("🗑️", key=f"del_{idx_bahan}", use_container_width=True, help="Hapus dari daftar"):
                                  st.session_state['database_bahan'] = st.session_state['database_bahan'].drop(idx_bahan).reset_index(drop=True)
+                                 # Mencegah fenomena memori Streamlit (Widget State Retention)
+                                 for k in list(st.session_state.keys()):
+                                     if any(k.startswith(p) for p in ["nama_", "chk_", "num_", "hrg_", "kal_", "pro_", "lem_", "kar_", "del_"]):
+                                         del st.session_state[k]
                                  st.rerun()
 
     st.session_state['database_bahan']['Gunakan'] = list_gunakan
