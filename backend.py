@@ -642,6 +642,21 @@ elif st.session_state['halaman'] == 'manual':
         st.dataframe(df_fase2, use_container_width=True, hide_index=True)
         st.caption("📌 *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil. Hasil akhir ditampilkan di Tab 2.*")
 
+        # ==========================================
+        # TAMBAHAN 1: TAHAP 6 (MANUAL ANALISIS SENSITIVITAS GRAFIK)
+        # ==========================================
+        st.write("---")
+        st.write("#### TAHAP 6: Pembentukan Grafik Analisis Sensitivitas")
+        st.write("Grafik analisis sensitivitas dibentuk dengan melakukan iterasi ulang terhadap model Simpleks menggunakan nilai batas bawah porsi ($X_{min}$) yang dimanipulasi secara bertahap (descending).")
+        st.markdown("""
+        **Langkah-langkah Pembuatan Grafik:**
+        1. Menetapkan himpunan skenario batas minimal porsi, misalnya $X_{min} \in \{1.0, 0.8, 0.6, 0.4, 0.2, 0.1\}$.
+        2. Menyelesaikan ulang model Simpleks (Fase 1 dan Fase 2) untuk setiap nilai $X_{min}$ pada himpunan tersebut.
+        3. Mencatat hasil akhir dari Fungsi Tujuan ($Z_{min}$) atau total biaya termurah pada setiap skenario iterasi.
+        4. Memetakan hasil ke dalam koordinat Kartesius di mana Sumbu X adalah nilai batas minimal porsi ($X_{min}$) secara menurun, dan Sumbu Y adalah nilai $Z$ (Biaya).
+        5. Menarik garis tren untuk menganalisis sifat *feasibility* daerah penyelesaian. Penurunan paksaan batas porsi akan memperluas daerah fisibel, sehingga menghasilkan biaya minimum yang lebih rendah.
+        """)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- HALAMAN 4: DOKUMENTASI (RUMUS) ---
@@ -652,6 +667,7 @@ elif st.session_state['halaman'] == 'dokumentasi':
         
     st.markdown('<div class="header-title-small">Sistem Pakar <span>MBG</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="white-box">', unsafe_allow_html=True)
+    
     st.write("### 📖 Integrasi Matriks Aljabar")
     st.latex(r"\text{Fungsi Minimum: } Z = \mathbf{C}^T \mathbf{X} \quad | \quad \text{Kendala: } \mathbf{A}\mathbf{X} \ge \mathbf{B}")
     
@@ -662,4 +678,36 @@ elif st.session_state['halaman'] == 'dokumentasi':
     - $A$ : Matriks kandungan gizi.
     - $B$ : Vektor target batas bawah nutrisi ($NK$).
     """)
+    
+    # ==========================================
+    # TAMBAHAN 2: RUMUS AMB SCHOFIELD & TEE DI DOKUMENTASI
+    # ==========================================
+    st.write("---")
+    st.write("### 🧮 Persamaan Angka Metabolisme Basal (AMB) Schofield")
+    st.write("Persamaan Schofield digunakan untuk mengestimasi kebutuhan energi dasar anak dan remaja berdasarkan usia, jenis kelamin, serta berat badan ($Wt$) dan tinggi badan ($Ht$) dalam meter.")
+    st.markdown("""
+    **Laki-laki:**
+    - $\le 3$ Tahun: $AMB = 0.167 Wt + 1517.4 Ht - 617.6$
+    - $4 - 10$ Tahun: $AMB = 19.6 Wt + 130.3 Ht + 414.9$
+    - $11 - 18$ Tahun: $AMB = 16.25 Wt + 137.2 Ht + 515.5$
+
+    **Perempuan:**
+    - $\le 3$ Tahun: $AMB = 16.25 Wt + 1023.2 Ht - 413.5$
+    - $4 - 10$ Tahun: $AMB = 16.97 Wt + 161.8 Ht + 371.2$
+    - $11 - 18$ Tahun: $AMB = 8.365 Wt + 465.0 Ht + 200.0$
+    """)
+    
+    st.write("---")
+    st.write("### 🏃 Total Energy Expenditure (TEE)")
+    st.write("TEE adalah total kalori yang dibutuhkan dalam sehari, dikalkulasikan dengan mengalikan AMB dengan faktor aktivitas fisik atau *Physical Activity Level* (PAL).")
+    st.latex(r"TEE = AMB \times PAL")
+    st.markdown("""
+    **Ketentuan Nilai Physical Activity Level (PAL):**
+    - Sangat Jarang / Pasif = $1.2$
+    - Jarang (Olahraga ringan 1-3 hari/minggu) = $1.375$
+    - Cukup (Olahraga sedang 3-5 hari/minggu) = $1.55$
+    - Sering (Olahraga berat 6-7 hari/minggu) = $1.725$
+    - Sangat Sering (Atlet / Fisik ekstra) = $1.9$
+    """)
+
     st.markdown('</div>', unsafe_allow_html=True)
