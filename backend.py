@@ -429,7 +429,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
             st.dataframe(df_ringkasan, use_container_width=True, hide_index=True)
 
             array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp/100g)"], errors='coerce').fillna(0).values
-            matriks_gizi = bahan_terpilih[["Kalori (Kkal/100g)", "Protein (g/100g)", "Lemak (g/100g)", "Karbohidrat (g/100g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
+            matriks_gizi = bahan_terpilih[["Kalori (Kkal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
             
             # Batas Maksimal dikonversi dari gram ke unit pengali (dibagi 100)
             batas_maksimal = [(0, p/100.0) for p in pd.to_numeric(bahan_terpilih["Batas Maksimal (g)"], errors='coerce').fillna(1000).values]
