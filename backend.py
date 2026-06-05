@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from scipy.optimize import linprog
-import uuid  # <-- Library bawaan Python untuk membuat ID unik (Mencegah bug hapus lauk)
+import uuid  
 
-# ==========================================
-# 1. KONFIGURASI HALAMAN & CSS KONTRAS TINGGI
-# ==========================================
+# ==============================
+# 1. KONFIGURASI HALAMAN & CSS 
+# ==============================
 st.set_page_config(page_title="Sistem Pakar MBG", layout="wide")
 
 st.markdown("""
@@ -103,7 +103,7 @@ if 'database_bahan' not in st.session_state:
         "Batas Maksimal (g)": [250.0, 100.0, 100.0, 150.0, 200.0, 150.0] 
     })
 
-# Pengecekan aman jika versi database lama masih tersimpan di cache browser Anda
+# Menyimpan lewat ID
 if "ID" not in st.session_state['database_bahan'].columns:
     st.session_state['database_bahan']["ID"] = [str(uuid.uuid4()) for _ in range(len(st.session_state['database_bahan']))]
 
@@ -126,9 +126,9 @@ if 'form_biodata' not in st.session_state:
         'waktu': 0 
     }
 
-# ==========================================
-# 4. SISTEM NAVIGASI HALAMAN (AI / GOOGLE STYLE)
-# ==========================================
+# ============================
+# 4. SISTEM NAVIGASI HALAMAN 
+# =============================
 
 if 'halaman' not in st.session_state:
     st.session_state['halaman'] = 'beranda'
@@ -195,12 +195,12 @@ elif st.session_state['halaman'] == 'kalkulator':
         berat_badan = st.number_input("Berat Badan / Wt (kg)", min_value=5.0, value=st.session_state['form_biodata']['bb'])
         tinggi_badan = st.number_input("Tinggi Badan / Ht (cm)", min_value=50.0, value=st.session_state['form_biodata']['tb'])
         skenario_waktu = st.selectbox("Target Pemenuhan Gizi (Skenario)", [
-            "1 Hari Penuh (Persis Jurnal UB)", 
-            "1x Makan Siang (Program MBG - Dibagi 3)"
+            "1 Hari Penuh (Sesuai Jurnal Referensi)", 
+            "1x Makan (Program MBG - Dibagi 3)"
         ], index=st.session_state['form_biodata']['waktu'])
     
     if st.button("Hitung Target & Simpan", type="primary"):
-        # Menyimpan inputan user agar tidak hilang saat pindah halaman
+        # Menyimpan inputan agar tidak hilang saat pindah halaman
         st.session_state['form_biodata'] = {
             'umur': umur_anak,
             'jk': 0 if jenis_kelamin == "Laki-laki" else 1,
@@ -291,13 +291,13 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
         with c_nama:
             nama_baru = st.text_input("Nama Makanan / Lauk Baru:", placeholder="Contoh: Daging Sapi, Tahu, Ikan Kembung")
         with c_harga:
-            harga_baru = st.number_input("Harga per Gram (Rp):", min_value=0.0, value=15.0, step=1.0)
+            harga_baru = st.number_input("Harga per 100 Gram (Rp):", min_value=0.0, value=15.0, step=1.0)
             
         g1, g2, g3, g4 = st.columns(4)
-        with g1: kalori_baru = st.number_input("Kalori (Kkal/g):", min_value=0.0, value=2.5, step=0.1)
-        with g2: protein_baru = st.number_input("Protein (g/g):", min_value=0.0, value=0.2, step=0.01)
-        with g3: lemak_baru = st.number_input("Lemak (g/g):", min_value=0.0, value=0.1, step=0.01)
-        with g4: karbo_baru = st.number_input("Karbohidrat (g/g):", min_value=0.0, value=0.0, step=0.01)
+        with g1: kalori_baru = st.number_input("Kalori (Kkal/100g):", min_value=0.0, value=2.5, step=0.1)
+        with g2: protein_baru = st.number_input("Protein (g/100g):", min_value=0.0, value=0.2, step=0.01)
+        with g3: lemak_baru = st.number_input("Lemak (g/100g):", min_value=0.0, value=0.1, step=0.01)
+        with g4: karbo_baru = st.number_input("Karbohidrat (g/100g):", min_value=0.0, value=0.0, step=0.01)
             
         if st.button(" Masukkan Makanan ke Daftar", type="primary"):
             if nama_baru.strip() != "":
@@ -305,12 +305,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     "ID": [str(uuid.uuid4())], # Berikan ID Unik untuk lauk baru
                     "Gunakan": [True], 
                     "Bahan Makanan": [nama_baru],
-                    "Harga (Rp)": [harga_baru], 
-                    "Kalori (Kkal)": [kalori_baru],
-                    "Protein (g)": [protein_baru],
-                    "Lemak (g)": [lemak_baru],
-                    "Karbohidrat (g)": [karbo_baru],
-                    "Batas Maksimal (g)": [150.0]
+                    "Harga (Rp/100g)": [harga_baru], 
+                    "Kalori (Kkal/100g)": [kalori_baru],
+                    "Protein (g/100g)": [protein_baru],
+                    "Lemak (g/100g)": [lemak_baru],
+                    "Karbohidrat (g/100g)": [karbo_baru],
+                    "Batas Maksimal (g/100g)": [150.0]
                 })
                 st.session_state['database_bahan'] = pd.concat([st.session_state['database_bahan'], df_baru], ignore_index=True)
                 st.session_state['halaman'] = 'kalkulator'
@@ -378,22 +378,22 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                          with c_pop:
                              with st.popover("📋 Detail & Edit Gizi", use_container_width=True):
                                  st.markdown(f"#### 🧪 Nilai Gizi {row['Bahan Makanan']}")
-                                 edit_harga = st.number_input(f"Harga (Rp)", min_value=0, value=int(row["Harga (Rp)"]), key=f"hrg_{unique_uid}")
-                                 edit_kalori = st.number_input(f"Kalori (Kkal)", min_value=0.0, value=float(row["Kalori (Kkal)"]), key=f"kal_{unique_uid}")
-                                 edit_protein = st.number_input(f"Protein (g)", min_value=0.0, value=float(row["Protein (g)"]), key=f"pro_{unique_uid}")
-                                 edit_lemak = st.number_input(f"Lemak (g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{unique_uid}")
-                                 edit_karbo = st.number_input(f"Karbohidrat (g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{unique_uid}")
+                                 edit_harga = st.number_input(f"Harga (Rp/100g)", min_value=0, value=int(row["Harga (Rp)"]), key=f"hrg_{unique_uid}")
+                                 edit_kalori = st.number_input(f"Kalori (Kkal/100g)", min_value=0.0, value=float(row["Kalori (Kkal)"]), key=f"kal_{unique_uid}")
+                                 edit_protein = st.number_input(f"Protein (g/100g)", min_value=0.0, value=float(row["Protein (g)"]), key=f"pro_{unique_uid}")
+                                 edit_lemak = st.number_input(f"Lemak (g/100g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{unique_uid}")
+                                 edit_karbo = st.number_input(f"Karbohidrat (g/100g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{unique_uid}")
                                  
                                  # Menyuntikkan langsung perubahan ke database memori
-                                 st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp)"] = edit_harga
-                                 st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal)"] = edit_kalori
-                                 st.session_state['database_bahan'].at[idx_bahan, "Protein (g)"] = edit_protein
-                                 st.session_state['database_bahan'].at[idx_bahan, "Lemak (g)"] = edit_lemak
-                                 st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g)"] = edit_karbo
+                                 st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp/100g)"] = edit_harga
+                                 st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal/100g)"] = edit_kalori
+                                 st.session_state['database_bahan'].at[idx_bahan, "Protein (g/100g)"] = edit_protein
+                                 st.session_state['database_bahan'].at[idx_bahan, "Lemak (g/100g)"] = edit_lemak
+                                 st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g/100g)"] = edit_karbo
                                  
                          with c_del:
                              # TOMBOL HAPUS MENGGUNAKAN ID UID
-                             st.button("🗑️", key=f"del_{unique_uid}", use_container_width=True, help="Hapus lauk dari daftar", on_click=hapus_bahan_callback, args=(unique_uid,))
+                             st.button("🗑️", key=f"del_{unique_uid}", use_container_width=True, help="Hapus menu dari daftar", on_click=hapus_bahan_callback, args=(unique_uid,))
 
     # Sinkronisasi akhir data checkbox dan stepper ke database utama
     st.session_state['database_bahan']['Gunakan'] = list_gunakan
@@ -442,7 +442,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                 solusi = linprog(array_harga, A_ub=A_kiri, b_ub=B_kanan, bounds=batas_maksimal, method='highs')
                 
                 if solusi.success:
-                    # PERBAIKAN: Kotak UI Biaya Minimum Dikembalikan Berwarna Oranye & Estetik
+                    # Tampilan Biaya Optimasi 
                     st.markdown(f"""
                     <div class="result-card" style="background-color: #EF8354; padding: 20px; border-radius: 10px; color: white; text-align: center; margin-top: 20px; margin-bottom: 20px;">
                         <p style="margin: 0; font-size: 1.2rem; font-weight: bold; color: white !important;">Total Biaya Paling Minimum (Titik Optimal)</p>
@@ -465,12 +465,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     st.write("---")
                     st.write("### 📊 Analisis Pemenuhan Gizi (Target vs Realisasi)")
                     
-                    total_kal_riil = sum((g/100) * k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal)"]).values))
-                    total_pro_riil = sum((g/100) * p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g)"]).values))
-                    total_lem_riil = sum((g/100) * l for g, l in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Lemak (g)"]).values))
-                    total_kar_riil = sum((g/100) * c for g, c in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Karbohidrat (g)"]).values))
+                    total_kal_riil = sum((g/100) * k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal/100g)"]).values))
+                    total_pro_riil = sum((g/100) * p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g/100g)"]).values))
+                    total_lem_riil = sum((g/100) * l for g, l in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Lemak (g/100g)"]).values))
+                    total_kar_riil = sum((g/100) * c for g, c in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Karbohidrat (g/100g)"]).values))
                     
-                    kategori = ['Protein (g)', 'Lemak (g)', 'Karbohidrat (g)']
+                    kategori = ['Protein (g/100g)', 'Lemak (g/100g)', 'Karbohidrat (g/100g)']
                     target_gizi = [st.session_state['target_protein'], st.session_state['target_lemak'], st.session_state['target_karbo']]
                     realisasi_gizi = [total_pro_riil, total_lem_riil, total_kar_riil]
                     
@@ -528,7 +528,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
 
 # --- HALAMAN 3: LANGKAH MANUAL (SANGAT DETAIL SESUAI JURNAL) ---
 elif st.session_state['halaman'] == 'manual':
-    if st.button("Kembali ke Beranda Utama"):
+    if st.button("⬅️ Kembali ke Beranda Utama"):
         st.session_state['halaman'] = 'beranda'
         st.rerun()
     st.markdown('<div class="header-title-small">Sistem Pakar <span>MBG</span></div>', unsafe_allow_html=True)
