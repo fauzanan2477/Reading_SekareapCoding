@@ -318,6 +318,17 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
     st.write("---") 
     st.write("Gunakan tombol +/- untuk mengatur porsi, dan klik tombol rincian untuk melihat kandungan gizi lauk.")
       
+    # ==========================================
+    # FUNGSI CALLBACK UNTUK MENGHAPUS (BUG FIX Streamlit)
+    # ==========================================
+    def hapus_bahan_callback(idx_to_drop):
+        # 1. Hapus baris dari DataFrame
+        st.session_state['database_bahan'] = st.session_state['database_bahan'].drop(idx_to_drop).reset_index(drop=True)
+        # 2. Hapus memori state Streamlit yang nyangkut
+        keys_to_delete = [k for k in st.session_state.keys() if any(k.startswith(p) for p in ["nama_", "chk_", "num_", "hrg_", "kal_", "pro_", "lem_", "kar_", "del_"])]
+        for k in keys_to_delete:
+            del st.session_state[k]
+
     list_gunakan = []
     list_batas_maksimal = []
      
@@ -370,14 +381,8 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                                  st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g)"] = edit_karbo
                          
                          with c_del:
-                             # TOMBOL HAPUS DENGAN CLEAR CACHE WIDGET STREAMLIT
-                             if st.button("🗑️", key=f"del_{idx_bahan}", use_container_width=True, help="Hapus dari daftar"):
-                                 st.session_state['database_bahan'] = st.session_state['database_bahan'].drop(idx_bahan).reset_index(drop=True)
-                                 # Mencegah fenomena memori Streamlit (Widget State Retention)
-                                 for k in list(st.session_state.keys()):
-                                     if any(k.startswith(p) for p in ["nama_", "chk_", "num_", "hrg_", "kal_", "pro_", "lem_", "kar_", "del_"]):
-                                         del st.session_state[k]
-                                 st.rerun()
+                             # TOMBOL HAPUS MENGGUNAKAN CALLBACK AGAR DIJALANKAN DULUAN
+                             st.button("🗑️", key=f"del_{idx_bahan}", use_container_width=True, help="Hapus dari daftar", on_click=hapus_bahan_callback, args=(idx_bahan,))
 
     st.session_state['database_bahan']['Gunakan'] = list_gunakan
     st.session_state['database_bahan']['Batas Maksimal (g)'] = list_batas_maksimal
