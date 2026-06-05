@@ -422,14 +422,14 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
             # ---> TABEL RINGKASAN DICETAK DI SINI <---
             st.write("---")
             st.write("### 📝 Ringkasan Bahan Makanan Terpilih")
-            st.write("Berikut adalah lauk-pauk yang masuk ke dalam komputasi sistem sebelum dioptimasi:")
+            st.write("Berikut adalah menu yang masuk ke dalam komputasi sistem sebelum dioptimasi:")
             
             # Membuang kolom ID rahasia dan status Gunakan agar tabel terlihat rapi
             df_ringkasan = bahan_terpilih.drop(columns=["ID", "Gunakan"])
             st.dataframe(df_ringkasan, use_container_width=True, hide_index=True)
 
-            array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp)"], errors='coerce').fillna(0).values
-            matriks_gizi = bahan_terpilih[["Kalori (Kkal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
+            array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp/100g)"], errors='coerce').fillna(0).values
+            matriks_gizi = bahan_terpilih[["Kalori (Kkal/100g)", "Protein (g/100g)", "Lemak (g/100g)", "Karbohidrat (g/100g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
             
             # Batas Maksimal dikonversi dari gram ke unit pengali (dibagi 100)
             batas_maksimal = [(0, p/100.0) for p in pd.to_numeric(bahan_terpilih["Batas Maksimal (g)"], errors='coerce').fillna(1000).values]
@@ -465,12 +465,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     st.write("---")
                     st.write("### 📊 Analisis Pemenuhan Gizi (Target vs Realisasi)")
                     
-                    total_kal_riil = sum((g/100) * k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal/100g)"]).values))
-                    total_pro_riil = sum((g/100) * p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g/100g)"]).values))
-                    total_lem_riil = sum((g/100) * l for g, l in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Lemak (g/100g)"]).values))
-                    total_kar_riil = sum((g/100) * c for g, c in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Karbohidrat (g/100g)"]).values))
+                    total_kal_riil = sum((g/100) * k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal)"]).values))
+                    total_pro_riil = sum((g/100) * p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g)"]).values))
+                    total_lem_riil = sum((g/100) * l for g, l in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Lemak (g)"]).values))
+                    total_kar_riil = sum((g/100) * c for g, c in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Karbohidrat (g)"]).values))
                     
-                    kategori = ['Protein (g/100g)', 'Lemak (g/100g)', 'Karbohidrat (g/100g)']
+                    kategori = ['Protein (g)', 'Lemak (g)', 'Karbohidrat (g)']
                     target_gizi = [st.session_state['target_protein'], st.session_state['target_lemak'], st.session_state['target_karbo']]
                     realisasi_gizi = [total_pro_riil, total_lem_riil, total_kar_riil]
                     
