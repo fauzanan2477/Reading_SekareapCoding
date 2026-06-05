@@ -16,7 +16,7 @@ st.markdown("""
     .block-container { padding-top: 2rem; max-width: 1100px; }
     
     /* Box putih untuk membagi seksi (White & Silver) */
-    .white-box { background-color: #FFFFFF; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(45,49,66,0.08); margin-bottom: 20px; border: 1px solid #BFC0C0; color: #2D3142;}
+    .white-box { background-color: #FFFFFF; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(45,49,66,0.08); margin-top: 15px; margin-bottom: 20px; border: 1px solid #BFC0C0; color: #2D3142;}
     
     /* Konfigurasi Tabs menu */
     .stTabs [data-baseweb="tab-list"] { justify-content: center; gap: 30px; border-bottom: 2px solid #BFC0C0; background-color: #FFFFFF; padding: 10px; border-radius: 10px; }
