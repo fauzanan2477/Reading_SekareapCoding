@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from scipy.optimize import linprog
-import uuid  # <-- Library bawaan Python untuk membuat ID unik
+import uuid  # <-- Library bawaan Python untuk membuat ID unik (Mencegah bug hapus lauk)
 
 # ==========================================
 # 1. KONFIGURASI HALAMAN & CSS KONTRAS TINGGI
@@ -115,6 +115,7 @@ if 'target_kalori' not in st.session_state:
         'rumus_amb_angka': r"\text{AMB (P)} = (16.97 \times 30.0) + (161.8 \times 1.35) + 371.2"
     })
 
+# --- TAMBAHAN MEMORI UNTUK FORM BIODATA AGAR TIDAK RESET ---
 if 'form_biodata' not in st.session_state:
     st.session_state['form_biodata'] = {
         'umur': 10,
@@ -178,26 +179,28 @@ elif st.session_state['halaman'] == 'kalkulator':
     st.write("Sistem menghitung target Makronutrien anak berdasarkan **Persamaan AMB Schofield** dan tingkat aktivitas fisik (Merujuk pada Jurnal Brawijaya).")
     
     kolom1, kolom2 = st.columns(2)
+    # PERBAIKAN: Mengikat nilai (value) ke st.session_state['form_biodata'] agar tidak reset
     with kolom1:
-        umur_anak = st.number_input("Umur Anak (Tahun)", min_value=1, max_value=18, value=10, key='input_umur')
-        jenis_kelamin = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], key='input_jk')
+        umur_anak = st.number_input("Umur Anak (Tahun)", min_value=1, max_value=18, value=st.session_state['form_biodata']['umur'])
+        jenis_kelamin = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=st.session_state['form_biodata']['jk'])
         tingkat_aktivitas = st.selectbox("Tingkat Aktivitas Fisik (Olahraga)", [
             "Sangat Jarang (Pasif / Tidak olahraga)",
             "Jarang (Olahraga ringan 1-3 hari/minggu)",
             "Cukup (Olahraga sedang 3-5 hari/minggu)",
             "Sering (Olahraga berat 6-7 hari/minggu)",
             "Sangat Sering (Atlet / Fisik ekstra)"
-        ], index=2, key='input_aktivitas')
+        ], index=st.session_state['form_biodata']['aktivitas'])
         
     with kolom2:
-        berat_badan = st.number_input("Berat Badan / Wt (kg)", min_value=5.0, value=30.0, key='input_bb')
-        tinggi_badan = st.number_input("Tinggi Badan / Ht (cm)", min_value=50.0, value=135.0, key='input_tb')
+        berat_badan = st.number_input("Berat Badan / Wt (kg)", min_value=5.0, value=st.session_state['form_biodata']['bb'])
+        tinggi_badan = st.number_input("Tinggi Badan / Ht (cm)", min_value=50.0, value=st.session_state['form_biodata']['tb'])
         skenario_waktu = st.selectbox("Target Pemenuhan Gizi (Skenario)", [
             "1 Hari Penuh (Persis Jurnal UB)", 
             "1x Makan Siang (Program MBG - Dibagi 3)"
-        ], key= 'input_skenario')
+        ], index=st.session_state['form_biodata']['waktu'])
     
     if st.button("Hitung Target & Simpan", type="primary"):
+        # Menyimpan inputan user agar tidak hilang saat pindah halaman
         st.session_state['form_biodata'] = {
             'umur': umur_anak,
             'jk': 0 if jenis_kelamin == "Laki-laki" else 1,
@@ -369,7 +372,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                          )
                          list_batas_maksimal.append(porsi_maks)
                      
-                         # 3. Baris Bawah Card: Tombol Popover Rincian Gizi & Tombol Hapus (DITAMBAHKAN)
+                         # 3. Baris Bawah Card: Tombol Popover Rincian Gizi & Tombol Hapus 
                          c_pop, c_del = st.columns([4, 1])
                          
                          with c_pop:
@@ -439,11 +442,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                 solusi = linprog(array_harga, A_ub=A_kiri, b_ub=B_kanan, bounds=batas_maksimal, method='highs')
                 
                 if solusi.success:
+                    # PERBAIKAN: Kotak UI Biaya Minimum Dikembalikan Berwarna Oranye & Estetik
                     st.markdown(f"""
-                    <div class="result-card">
-                        <p>Total Biaya Paling Minimum (Titik Optimal)</p>
-                        <h2>Rp {solusi.fun:,.0f}</h2>
-                        <p>Solusi Makanan Termurah Sesuai Target Waktu</p>
+                    <div class="result-card" style="background-color: #EF8354; padding: 20px; border-radius: 10px; color: white; text-align: center; margin-top: 20px; margin-bottom: 20px;">
+                        <p style="margin: 0; font-size: 1.2rem; font-weight: bold; color: white !important;">Total Biaya Paling Minimum (Titik Optimal)</p>
+                        <h2 style="margin: 0; font-size: 3rem; font-weight: 900; color: white !important;">Rp {solusi.fun:,.0f}</h2>
+                        <p style="margin: 0; color: white !important;">Solusi Makanan Termurah Sesuai Target Waktu</p>
                     </div>
                     """, unsafe_allow_html=True)
                     
@@ -617,6 +621,7 @@ elif st.session_state['halaman'] == 'manual':
         """)
         
         # ------------------ TAHAP 5 ------------------
+        # PERBAIKAN: Melengkapi langkah manual yang sempat hilang
         st.write("---")
         st.write("#### TAHAP 5: Eksekusi Fase 2 (Optimasi Biaya Minimum)")
         st.write("Setelah semua kolom $R$ berhasil dibuang, fungsi harga asli ($Z$) dikembalikan ke dalam matriks untuk iterasi Fase 2.")
@@ -627,6 +632,19 @@ elif st.session_state['halaman'] == 'manual':
         df_fase2 = pd.DataFrame([baris_Z_fase2], columns=header_fase2)
         st.dataframe(df_fase2, use_container_width=True, hide_index=True)
         st.caption("📌 *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil. Hasil akhir ditampilkan di Tab 2.*")
+
+        # ------------------ TAHAP 6 ------------------
+        st.write("---")
+        st.write("#### TAHAP 6: Pembentukan Grafik Analisis Sensitivitas")
+        st.write("Grafik analisis sensitivitas dibentuk dengan melakukan iterasi ulang terhadap model Simpleks menggunakan nilai batas bawah porsi ($X_{min}$) yang dimanipulasi secara bertahap (descending).")
+        st.markdown("""
+        **Langkah-langkah Pembuatan Grafik:**
+        1. Menetapkan himpunan skenario batas minimal porsi, misalnya $X_{min} \in \{1.0, 0.8, 0.6, 0.4, 0.2, 0.1\}$.
+        2. Menyelesaikan ulang model Simpleks (Fase 1 dan Fase 2) untuk setiap nilai $X_{min}$ pada himpunan tersebut.
+        3. Mencatat hasil akhir dari Fungsi Tujuan ($Z_{min}$) atau total biaya termurah pada setiap skenario iterasi.
+        4. Memetakan hasil ke dalam koordinat Kartesius di mana Sumbu X adalah nilai batas minimal porsi ($X_{min}$) secara menurun, dan Sumbu Y adalah nilai $Z$ (Biaya).
+        5. Menarik garis tren untuk menganalisis sifat *feasibility* daerah penyelesaian. Penurunan paksaan batas porsi akan memperluas daerah fisibel, sehingga menghasilkan biaya minimum yang lebih rendah.
+        """)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
