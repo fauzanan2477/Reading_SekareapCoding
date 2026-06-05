@@ -92,7 +92,7 @@ st.markdown("""
 # ==========================================
 if 'database_bahan' not in st.session_state:
     st.session_state['database_bahan'] = pd.DataFrame({
-        "ID": [str(uuid.uuid4()) for _ in range(6)], # <-- ID Unik Tersembunyi (Fix Bug)
+        "ID": [str(uuid.uuid4()) for _ in range(6)], 
         "Gunakan": [True, True, True, True, False, True], 
         "Bahan Makanan": ["Nasi Putih", "Telur Ayam", "Tempe Murni", "Sayur Bayam", "Susu Sapi", "Daging Ayam"],
         "Harga (Rp)": [1500, 2800, 1500, 1000, 2000, 4500], 
@@ -103,7 +103,7 @@ if 'database_bahan' not in st.session_state:
         "Batas Maksimal (g)": [250.0, 100.0, 100.0, 150.0, 200.0, 150.0] 
     })
 
-# Menyimpan lewat ID
+
 if "ID" not in st.session_state['database_bahan'].columns:
     st.session_state['database_bahan']["ID"] = [str(uuid.uuid4()) for _ in range(len(st.session_state['database_bahan']))]
 
@@ -115,7 +115,7 @@ if 'target_kalori' not in st.session_state:
         'rumus_amb_angka': r"\text{AMB (P)} = (16.97 \times 30.0) + (161.8 \times 1.35) + 371.2"
     })
 
-# --- TAMBAHAN MEMORI UNTUK FORM BIODATA AGAR TIDAK RESET ---
+
 if 'form_biodata' not in st.session_state:
     st.session_state['form_biodata'] = {
         'umur': 10,
@@ -179,7 +179,7 @@ elif st.session_state['halaman'] == 'kalkulator':
     st.write("Sistem menghitung target Makronutrien anak berdasarkan **Persamaan AMB Schofield** dan tingkat aktivitas fisik (Merujuk pada Jurnal Brawijaya).")
     
     kolom1, kolom2 = st.columns(2)
-    # PERBAIKAN: Mengikat nilai (value) ke st.session_state['form_biodata'] agar tidak reset
+    
     with kolom1:
         umur_anak = st.number_input("Umur Anak (Tahun)", min_value=1, max_value=18, value=st.session_state['form_biodata']['umur'])
         jenis_kelamin = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=st.session_state['form_biodata']['jk'])
@@ -200,7 +200,7 @@ elif st.session_state['halaman'] == 'kalkulator':
         ], index=st.session_state['form_biodata']['waktu'])
     
     if st.button("Hitung Target & Simpan", type="primary"):
-        # Menyimpan inputan agar tidak hilang saat pindah halaman
+        
         st.session_state['form_biodata'] = {
             'umur': umur_anak,
             'jk': 0 if jenis_kelamin == "Laki-laki" else 1,
@@ -213,7 +213,8 @@ elif st.session_state['halaman'] == 'kalkulator':
             ].index(tingkat_aktivitas),
             'bb': berat_badan,
             'tb': tinggi_badan,
-            'waktu': 0 if skenario_waktu == "1 Hari Penuh (Persis Jurnal UB)" else 1
+            # [PERBAIKAN 3] Menyamakan string teks persis dengan opsi dropdown agar tidak reset
+            'waktu': 0 if skenario_waktu == "1 Hari Penuh (Sesuai Jurnal Referensi)" else 1
         }
         
         if tingkat_aktivitas == "Sangat Jarang (Pasif / Tidak olahraga)": pengali_aktivitas = 1.2
@@ -274,7 +275,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
         
     st.markdown('<div class="header-title-small">Sistem Pakar <span>MBG</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="white-box" style="border-left: 5px solid #e1b12c;">', unsafe_allow_html=True)
-    st.write("#### 🎯 Target Gizi Saat Ini (Syarat Matriks Batas Bawah):")
+    st.write("####  Target Gizi Saat Ini (Syarat Matriks Batas Bawah):")
     k1, k2, k3, k4 = st.columns(4)
     k1.metric("Kalori Minimal", f"{st.session_state['target_kalori']} Kkal")
     k2.metric("Protein (Min 10%)", f"{st.session_state['target_protein']} Gram")
@@ -301,16 +302,17 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
             
         if st.button(" Masukkan Makanan ke Daftar", type="primary"):
             if nama_baru.strip() != "":
+                # [PERBAIKAN 2] Mengembalikan key ke "Harga (Rp)" agar tidak membuat kolom duplikat
                 df_baru = pd.DataFrame({
-                    "ID": [str(uuid.uuid4())], # Berikan ID Unik untuk lauk baru
+                    "ID": [str(uuid.uuid4())], 
                     "Gunakan": [True], 
                     "Bahan Makanan": [nama_baru],
-                    "Harga (Rp/100g)": [harga_baru], 
-                    "Kalori (Kkal/100g)": [kalori_baru],
-                    "Protein (g/100g)": [protein_baru],
-                    "Lemak (g/100g)": [lemak_baru],
-                    "Karbohidrat (g/100g)": [karbo_baru],
-                    "Batas Maksimal (g/100g)": [150.0]
+                    "Harga (Rp)": [harga_baru], 
+                    "Kalori (Kkal)": [kalori_baru],
+                    "Protein (g)": [protein_baru],
+                    "Lemak (g)": [lemak_baru],
+                    "Karbohidrat (g)": [karbo_baru],
+                    "Batas Maksimal (g)": [150.0]
                 })
                 st.session_state['database_bahan'] = pd.concat([st.session_state['database_bahan'], df_baru], ignore_index=True)
                 st.session_state['halaman'] = 'kalkulator'
@@ -323,7 +325,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
     st.write("Gunakan tombol +/- untuk mengatur porsi, dan klik tombol rincian untuk melihat kandungan gizi lauk.")
       
     # ==========================================
-    # FUNGSI CALLBACK MENGHAPUS BERDASARKAN ID (DIJAMIN TIDAK ERROR)
+    # FUNGSI CALLBACK MENGHAPUS BERDASARKAN ID 
     # ==========================================
     def hapus_bahan_callback(id_to_drop):
         df_sekarang = st.session_state['database_bahan']
@@ -341,19 +343,19 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
          # Membuat 3 kolom horizontal berdampingan di satu baris
          kolom_card = st.columns(3)
          
-         # Mengisi tiap-tiap kolom (Maksimal 3 card per baris)
+         
          for j in range(3):
              idx_bahan = i + j
              if idx_bahan < total_bahan:
                  row = database_aktif.iloc[idx_bahan]
-                 unique_uid = str(row["ID"]) # Gunakan UID sebagai pengunci memori
+                 unique_uid = str(row["ID"]) 
                  
-                 # Menempatkan Card ke dalam kolom yang sesuai (Kolom 0, 1, atau 2)
+                 
                  with kolom_card[j]:
-                     # Membuka kotak bingkai premium mini-card (Menggunakan kelas white-box kamu)
+                     
                      with st.container(border=True):
                      
-                         # 1. Baris Atas Card: Nama Lauk & Tombol Centang Aktif
+                         
                          c_nama, c_aktif = st.columns([3, 1])
                          with c_nama:
                              st.markdown(f"##### **{row['Bahan Makanan']}**")
@@ -361,7 +363,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                              status_aktif = st.checkbox("Pakai", value=row["Gunakan"], key=f"chk_{unique_uid}", label_visibility="collapsed")
                              list_gunakan.append(status_aktif)
                          
-                         # 2. Baris Tengah Card: Tombol Input Stepper Porsi (+ / -)
+                         
                          porsi_maks = st.number_input(
                              "Batas Maksimal (Gram):",
                              min_value=0.0,
@@ -372,30 +374,30 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                          )
                          list_batas_maksimal.append(porsi_maks)
                      
-                         # 3. Baris Bawah Card: Tombol Popover Rincian Gizi & Tombol Hapus 
+                         
                          c_pop, c_del = st.columns([4, 1])
                          
                          with c_pop:
                              with st.popover("📋 Detail & Edit Gizi", use_container_width=True):
-                                 st.markdown(f"#### 🧪 Nilai Gizi {row['Bahan Makanan']}")
+                                 st.markdown(f"####  Nilai Gizi {row['Bahan Makanan']}")
                                  edit_harga = st.number_input(f"Harga (Rp/100g)", min_value=0, value=int(row["Harga (Rp)"]), key=f"hrg_{unique_uid}")
                                  edit_kalori = st.number_input(f"Kalori (Kkal/100g)", min_value=0.0, value=float(row["Kalori (Kkal)"]), key=f"kal_{unique_uid}")
                                  edit_protein = st.number_input(f"Protein (g/100g)", min_value=0.0, value=float(row["Protein (g)"]), key=f"pro_{unique_uid}")
                                  edit_lemak = st.number_input(f"Lemak (g/100g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{unique_uid}")
                                  edit_karbo = st.number_input(f"Karbohidrat (g/100g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{unique_uid}")
                                  
-                                 # Menyuntikkan langsung perubahan ke database memori
-                                 st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp/100g)"] = edit_harga
-                                 st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal/100g)"] = edit_kalori
-                                 st.session_state['database_bahan'].at[idx_bahan, "Protein (g/100g)"] = edit_protein
-                                 st.session_state['database_bahan'].at[idx_bahan, "Lemak (g/100g)"] = edit_lemak
-                                 st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g/100g)"] = edit_karbo
+                                 # [PERBAIKAN 2] Menyamakan update ke key "Harga (Rp)" asli agar Manual Tabel ter-update
+                                 st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp)"] = edit_harga
+                                 st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal)"] = edit_kalori
+                                 st.session_state['database_bahan'].at[idx_bahan, "Protein (g)"] = edit_protein
+                                 st.session_state['database_bahan'].at[idx_bahan, "Lemak (g)"] = edit_lemak
+                                 st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g)"] = edit_karbo
                                  
                          with c_del:
                              # TOMBOL HAPUS MENGGUNAKAN ID UID
                              st.button("🗑️", key=f"del_{unique_uid}", use_container_width=True, help="Hapus menu dari daftar", on_click=hapus_bahan_callback, args=(unique_uid,))
 
-    # Sinkronisasi akhir data checkbox dan stepper ke database utama
+    
     st.session_state['database_bahan']['Gunakan'] = list_gunakan
     st.session_state['database_bahan']['Batas Maksimal (g)'] = list_batas_maksimal
 
@@ -413,7 +415,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
         B_kanan = -1 * np.array([kal, pro, lem, kar])
         return linprog(array_harga, A_ub=A_kiri, b_ub=B_kanan, bounds=batas_bounds, method='highs')
 
-    if st.button("🚀 Kalkulasi Biaya Termurah", type="primary", use_container_width=True):
+    if st.button(" Kalkulasi Biaya Termurah", type="primary", use_container_width=True):
         bahan_terpilih = st.session_state['database_bahan'][st.session_state['database_bahan']["Gunakan"] == True].copy()
         
         if len(bahan_terpilih) < 2:
@@ -421,20 +423,21 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
         else:
             # ---> TABEL RINGKASAN DICETAK DI SINI <---
             st.write("---")
-            st.write("### 📝 Ringkasan Bahan Makanan Terpilih")
+            st.write("### Ringkasan Bahan Makanan Terpilih")
             st.write("Berikut adalah menu yang masuk ke dalam komputasi sistem sebelum dioptimasi:")
             
-            # Membuang kolom ID rahasia dan status Gunakan agar tabel terlihat rapi
+            
             df_ringkasan = bahan_terpilih.drop(columns=["ID", "Gunakan"])
             st.dataframe(df_ringkasan, use_container_width=True, hide_index=True)
 
-            array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp/100g)"], errors='coerce').fillna(0).values
+            # [PERBAIKAN 2] Memanggil kolom "Harga (Rp)" agar match dengan perbaikan sebelumnya
+            array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp)"], errors='coerce').fillna(0).values
             matriks_gizi = bahan_terpilih[["Kalori (Kkal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
             
-            # Batas Maksimal dikonversi dari gram ke unit pengali (dibagi 100)
+            
             batas_maksimal = [(0, p/100.0) for p in pd.to_numeric(bahan_terpilih["Batas Maksimal (g)"], errors='coerce').fillna(1000).values]
             
-            # Matriks A dikali -1 karena linprog SciPy menggunakan fungsi <= sedangkan kita butuh >=
+            
             A_kiri = -1 * matriks_gizi.T
             B_kanan = -1 * np.array([st.session_state['target_kalori'], st.session_state['target_protein'], st.session_state['target_lemak'], st.session_state['target_karbo']])
             
@@ -442,7 +445,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                 solusi = linprog(array_harga, A_ub=A_kiri, b_ub=B_kanan, bounds=batas_maksimal, method='highs')
                 
                 if solusi.success:
-                    # Tampilan Biaya Optimasi 
+                     
                     st.markdown(f"""
                     <div class="result-card" style="background-color: #EF8354; padding: 20px; border-radius: 10px; color: white; text-align: center; margin-top: 20px; margin-bottom: 20px;">
                         <p style="margin: 0; font-size: 1.2rem; font-weight: bold; color: white !important;">Total Biaya Paling Minimum (Titik Optimal)</p>
@@ -463,7 +466,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     st.markdown('</div>', unsafe_allow_html=True)
 
                     st.write("---")
-                    st.write("### 📊 Analisis Pemenuhan Gizi (Target vs Realisasi)")
+                    st.write("###  Analisis Pemenuhan Gizi (Target vs Realisasi)")
                     
                     total_kal_riil = sum((g/100) * k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal)"]).values))
                     total_pro_riil = sum((g/100) * p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g)"]).values))
@@ -487,7 +490,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     st.plotly_chart(fig_bar, use_container_width=True)
 
                     st.write("---")
-                    st.write("### 📈 Analisis Sensitivitas (Sesuai Jurnal Universitas Brawijaya)")
+                    st.write("###  Analisis Sensitivitas (Sesuai Jurnal Universitas Brawijaya)")
                     st.write("Grafik di bawah ini memanipulasi batas minimal porsi untuk membuktikan bahwa melonggarkan syarat porsi minimal akan memperluas daerah *feasible* (menurunkan total biaya).")
                     
                     rentang_minimal = [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]
@@ -609,7 +612,7 @@ elif st.session_state['halaman'] == 'manual':
         
         df_tableau = pd.DataFrame(data_tableau, columns=header_kolom)
         st.dataframe(df_tableau.style.format(precision=1), use_container_width=True, hide_index=True)
-        st.caption("📌 *Ini adalah Tableau Initial Fase 1 yang sudah ter-substitusi.*")
+        st.caption(" *Ini adalah Tableau Initial Fase 1 yang sudah ter-substitusi.*")
         
         st.markdown("""
         **🔄 Proses Lanjutan Fase 1 (Operasi Baris Elementer):**
@@ -631,7 +634,7 @@ elif st.session_state['halaman'] == 'manual':
         
         df_fase2 = pd.DataFrame([baris_Z_fase2], columns=header_fase2)
         st.dataframe(df_fase2, use_container_width=True, hide_index=True)
-        st.caption("📌 *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil. Hasil akhir ditampilkan di Tab 2.*")
+        st.caption(" *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil. Hasil akhir ditampilkan di Tab 2.*")
 
         # ------------------ TAHAP 6 ------------------
         st.write("---")
@@ -650,14 +653,14 @@ elif st.session_state['halaman'] == 'manual':
 
 # --- HALAMAN 4: DOKUMENTASI (RUMUS) ---
 elif st.session_state['halaman'] == 'dokumentasi':
-    if st.button("Kembali ke Beranda Utama"):
+    if st.button("⬅️ Kembali ke Beranda Utama"):
         st.session_state['halaman'] = 'beranda'
         st.rerun()
         
     st.markdown('<div class="header-title-small">Sistem Pakar <span>MBG</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="white-box">', unsafe_allow_html=True)
     
-    st.write("### 📖 Integrasi Matriks Aljabar")
+    st.write("###  Integrasi Matriks Aljabar")
     st.latex(r"\text{Fungsi Minimum: } Z = \mathbf{C}^T \mathbf{X} \quad | \quad \text{Kendala: } \mathbf{A}\mathbf{X} \ge \mathbf{B}")
     
     st.write("Penjelasan Variabel Ruang Vektor:")
@@ -669,7 +672,7 @@ elif st.session_state['halaman'] == 'dokumentasi':
     """)
     
     st.write("---")
-    st.write("### 🧮 Persamaan Angka Metabolisme Basal (AMB) Schofield")
+    st.write("###  Persamaan Angka Metabolisme Basal (AMB) Schofield")
     st.write("Persamaan Schofield digunakan untuk mengestimasi kebutuhan energi dasar anak dan remaja berdasarkan usia, jenis kelamin, serta berat badan ($Wt$) dan tinggi badan ($Ht$) dalam meter.")
     st.markdown("""
     **Laki-laki:**
@@ -684,7 +687,7 @@ elif st.session_state['halaman'] == 'dokumentasi':
     """)
     
     st.write("---")
-    st.write("### 🏃 Total Energy Expenditure (TEE)")
+    st.write("###  Total Energy Expenditure (TEE)")
     st.write("TEE adalah total kalori yang dibutuhkan dalam sehari, dikalkulasikan dengan mengalikan AMB dengan faktor aktivitas fisik atau *Physical Activity Level* (PAL).")
     st.latex(r"TEE = AMB \times PAL")
     st.markdown("""
