@@ -688,7 +688,7 @@ elif st.session_state['halaman'] == 'manual':
 
         # [UPGRADE 7] Penjelasan Aljabar Linear Fase 2
         st.info("""
-        💡 **Penjelasan Singkat:** Perhatikan pada tabel Fase 2 ini, seluruh variabel buatan ($R$) **telah dihapus sepenuhnya** karena misi Fase 1 telah berhasil (menemukan daerah fisibel). Sistem memanggil kembali fungsi tujuan asli yaitu **Biaya ($Z$)**. Nilai kolom Surplus ($S$) di-set menjadi **0** karena kelebihan gizi (surplus) di dalam perut tidak memiliki harga beli di pasar.
+        💡 **Penjelasan Singkat:** Pada tabel Fase 2 ini, seluruh variabel buatan ($R$) **telah dihapus sepenuhnya** karena misi Fase 1 telah berhasil (menemukan daerah fisibel). Sistem memanggil kembali fungsi tujuan asli yaitu **Biaya ($Z$)**. Nilai kolom Surplus ($S$) di-set menjadi **0** karena kelebihan gizi (surplus) di dalam perut tidak memiliki harga beli di pasar.
         """)
         
         # =========================================================================
