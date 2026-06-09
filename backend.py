@@ -461,7 +461,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     # [UPGRADE 2] Menambahkan Baris "TOTAL" di bawah tabel
                     total_row = pd.DataFrame({
                         "Bahan Makanan": ["TOTAL (REALISASI)"],
-                        "Takaran Disarankan": ["-"],
+                        "Takaran Disarankan": [""],
                         "Kalori (Kkal)": [f"{sum(kal_list):,.1f}"],
                         "Protein (g)": [f"{sum(pro_list):,.1f}"],
                         "Lemak (g)": [f"{sum(lem_list):,.1f}"],
