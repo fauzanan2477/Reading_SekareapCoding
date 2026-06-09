@@ -213,6 +213,7 @@ elif st.session_state['halaman'] == 'kalkulator':
             ].index(tingkat_aktivitas),
             'bb': berat_badan,
             'tb': tinggi_badan,
+            # [PERBAIKAN 3] Menyamakan string teks persis dengan opsi dropdown agar tidak reset
             'waktu': 0 if skenario_waktu == "1 Hari Penuh (Sesuai Jurnal Referensi)" else 1
         }
         
@@ -301,6 +302,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
             
         if st.button(" Masukkan Makanan ke Daftar", type="primary"):
             if nama_baru.strip() != "":
+                # [PERBAIKAN 2] Mengembalikan key ke "Harga (Rp)" agar tidak membuat kolom duplikat
                 df_baru = pd.DataFrame({
                     "ID": [str(uuid.uuid4())], 
                     "Gunakan": [True], 
@@ -327,6 +329,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
     # ==========================================
     def hapus_bahan_callback(id_to_drop):
         df_sekarang = st.session_state['database_bahan']
+        # Filter keluar baris yang memiliki ID tersebut
         st.session_state['database_bahan'] = df_sekarang[df_sekarang["ID"] != id_to_drop].reset_index(drop=True)
 
     list_gunakan = []
@@ -337,21 +340,29 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
       
     # Melakukan looping per 3 bahan makanan sekaligus untuk membuat baris baru
     for i in range(0, total_bahan, 3):
+         # Membuat 3 kolom horizontal berdampingan di satu baris
          kolom_card = st.columns(3)
+         
+         
          for j in range(3):
              idx_bahan = i + j
              if idx_bahan < total_bahan:
                  row = database_aktif.iloc[idx_bahan]
                  unique_uid = str(row["ID"]) 
                  
+                 
                  with kolom_card[j]:
+                     
                      with st.container(border=True):
+                     
+                         
                          c_nama, c_aktif = st.columns([3, 1])
                          with c_nama:
                              st.markdown(f"##### **{row['Bahan Makanan']}**")
                          with c_aktif:
                              status_aktif = st.checkbox("Pakai", value=row["Gunakan"], key=f"chk_{unique_uid}", label_visibility="collapsed")
                              list_gunakan.append(status_aktif)
+                         
                          
                          porsi_maks = st.number_input(
                              "Batas Maksimal (Gram):",
@@ -363,6 +374,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                          )
                          list_batas_maksimal.append(porsi_maks)
                      
+                         
                          c_pop, c_del = st.columns([4, 1])
                          
                          with c_pop:
@@ -374,6 +386,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                                  edit_lemak = st.number_input(f"Lemak (g/100g)", min_value=0.0, value=float(row["Lemak (g)"]), key=f"lem_{unique_uid}")
                                  edit_karbo = st.number_input(f"Karbohidrat (g/100g)", min_value=0.0, value=float(row["Karbohidrat (g)"]), key=f"kar_{unique_uid}")
                                  
+                                 # [PERBAIKAN 2] Menyamakan update ke key "Harga (Rp)" asli agar Manual Tabel ter-update
                                  st.session_state['database_bahan'].at[idx_bahan, "Harga (Rp)"] = edit_harga
                                  st.session_state['database_bahan'].at[idx_bahan, "Kalori (Kkal)"] = edit_kalori
                                  st.session_state['database_bahan'].at[idx_bahan, "Protein (g)"] = edit_protein
@@ -381,6 +394,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                                  st.session_state['database_bahan'].at[idx_bahan, "Karbohidrat (g)"] = edit_karbo
                                  
                          with c_del:
+                             # TOMBOL HAPUS MENGGUNAKAN ID UID
                              st.button("🗑️", key=f"del_{unique_uid}", use_container_width=True, help="Hapus menu dari daftar", on_click=hapus_bahan_callback, args=(unique_uid,))
 
     
@@ -407,17 +421,22 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
         if len(bahan_terpilih) < 2:
             st.error("⚠️ Centang minimal 2 bahan makanan untuk komputasi matriks.")
         else:
+            # ---> TABEL RINGKASAN DICETAK DI SINI <---
             st.write("---")
             st.write("### Ringkasan Bahan Makanan Terpilih")
             st.write("Berikut adalah menu yang masuk ke dalam komputasi sistem sebelum dioptimasi:")
             
+            
             df_ringkasan = bahan_terpilih.drop(columns=["ID", "Gunakan"])
             st.dataframe(df_ringkasan, use_container_width=True, hide_index=True)
 
+            # [PERBAIKAN 2] Memanggil kolom "Harga (Rp)" agar match dengan perbaikan sebelumnya
             array_harga = pd.to_numeric(bahan_terpilih["Harga (Rp)"], errors='coerce').fillna(0).values
             matriks_gizi = bahan_terpilih[["Kalori (Kkal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"]].apply(pd.to_numeric, errors='coerce').fillna(0).values
             
+            
             batas_maksimal = [(0, p/100.0) for p in pd.to_numeric(bahan_terpilih["Batas Maksimal (g)"], errors='coerce').fillna(1000).values]
+            
             
             A_kiri = -1 * matriks_gizi.T
             B_kanan = -1 * np.array([st.session_state['target_kalori'], st.session_state['target_protein'], st.session_state['target_lemak'], st.session_state['target_karbo']])
@@ -438,8 +457,8 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     st.markdown('<div class="white-box">', unsafe_allow_html=True)
                     st.write("### Vektor Rekomendasi Takaran")
                     hasil_gram = solusi.x * 100 
-                    
-                    # [UPGRADE 1] Menghitung kandungan gizi spesifik per bahan yang disarankan
+
+                    # Menghitung kandungan gizi spesifik per bahan yang disarankan
                     kal_list = [(g/100)*k for g, k in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Kalori (Kkal)"]).values)]
                     pro_list = [(g/100)*p for g, p in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Protein (g)"]).values)]
                     lem_list = [(g/100)*l for g, l in zip(hasil_gram, pd.to_numeric(bahan_terpilih["Lemak (g)"]).values)]
@@ -458,10 +477,10 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     # Memfilter bahan yang tidak terpilih (0 gram)
                     df_filtered = tabel_hasil[solusi.x > 0.01].copy()
                     
-                    # [UPGRADE 2] Menambahkan Baris "TOTAL" di bawah tabel
+                    # [Menambahkan Baris "TOTAL" di bawah tabel
                     total_row = pd.DataFrame({
                         "Bahan Makanan": ["TOTAL (REALISASI)"],
-                        "Takaran Disarankan": ["-"],
+                        "Takaran Disarankan": [""],
                         "Kalori (Kkal)": [f"{sum(kal_list):,.1f}"],
                         "Protein (g)": [f"{sum(pro_list):,.1f}"],
                         "Lemak (g)": [f"{sum(lem_list):,.1f}"],
@@ -518,18 +537,6 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                     )
                     st.plotly_chart(fig_bar, use_container_width=True)
-                    
-                    # [UPGRADE 4] Info Nilai Surplus
-                    st.write("#### Nilai Variabel Surplus (Kelebihan Gizi) Akhir:")
-                    st.info(f"""
-                    Secara matematis dari tabel simpleks, berikut adalah nilai variabel $S$ (Surplus) pada titik optimal:
-                    - **S1 (Kalori):** {max(0, total_kal_riil - st.session_state['target_kalori']):.1f} Kkal berlebih
-                    - **S2 (Protein):** {max(0, total_pro_riil - st.session_state['target_protein']):.1f} Gram berlebih
-                    - **S3 (Lemak):** {max(0, total_lem_riil - st.session_state['target_lemak']):.1f} Gram berlebih
-                    - **S4 (Karbo):** {max(0, total_kar_riil - st.session_state['target_karbo']):.1f} Gram berlebih
-
-                    *Catatan: Kelebihan gizi ini bernilai Rp 0 pada fungsi biaya, sehingga tidak menambah beban pengeluaran.*
-                    """)
 
                     st.write("---")
                     st.write("###  Analisis Sensitivitas (Merujuk Jurnal Universitas Brawijaya)")
@@ -636,34 +643,25 @@ elif st.session_state['halaman'] == 'manual':
         st.write("Pada Fase 1, nilai uang ($Z$) diabaikan sementara. Tujuan diubah untuk **meminimalkan variabel fiktif $R$** hingga habis ($W=0$).")
         st.latex(r"\text{Fungsi Tujuan Fase 1: Min } W = R_1 + R_2 + R_3 + R_4")
         
-        # [UPGRADE 5] Header Kolom Dinamis
-        jml_kendala = len(nama_nutrisi)
-        header_S = [f"S{i+1}" for i in range(jml_kendala)]
-        header_R = [f"R{i+1}" for i in range(jml_kendala)]
-        header_kolom = ["Basis"] + [f"x{i+1}" for i in range(len(bahan_aktif))] + header_S + header_R + ["NK"]
+        header_kolom = ["Basis"] + [f"x{i+1}" for i in range(len(bahan_aktif))] + ["S1", "S2", "S3", "S4", "R1", "R2", "R3", "R4", "NK"]
         data_tableau = []
         
         # Menyusun baris matriks secara dinamis
         for i, nutrisi in enumerate(nama_nutrisi):
             baris = [f"R{i+1}"] + bahan_aktif[nutrisi].tolist()
-            kolom_surplus = [0]*jml_kendala; kolom_surplus[i] = -1
-            kolom_artificial = [0]*jml_kendala; kolom_artificial[i] = 1
+            kolom_surplus = [0]*4; kolom_surplus[i] = -1
+            kolom_artificial = [0]*4; kolom_artificial[i] = 1
             baris.extend(kolom_surplus + kolom_artificial + [batas_nutrisi[i]])
             data_tableau.append(baris)
             
         # Baris W adalah penjumlahan seluruh koefisien fungsi kendala
         baris_W = ["W (Fase 1)"] + [sum(bahan_aktif.loc[j, nama_nutrisi]) for j in range(len(bahan_aktif))]
-        baris_W.extend([-1]*jml_kendala + [0]*jml_kendala + [sum(batas_nutrisi)])
+        baris_W.extend([-1, -1, -1, -1, 0, 0, 0, 0, sum(batas_nutrisi)])
         data_tableau.append(baris_W)
         
         df_tableau = pd.DataFrame(data_tableau, columns=header_kolom)
         st.dataframe(df_tableau.style.format(precision=1), use_container_width=True, hide_index=True)
         st.caption(" *Ini adalah Tabel Inisial Fase 1 yang sudah ter-substitusi.*")
-        
-        # [UPGRADE 6] Penjelasan Aljabar Linear Fase 1
-        st.info("""
-        💡 **Penjelasan Aljabar Linear:** Baris `W (Fase 1)` di atas sudah mengalami **Operasi Baris Elementer (OBE)** secara otomatis oleh sistem. Karena variabel $R$ berfungsi sebagai basis (identitas), nilainya **wajib 0** di baris W. Untuk menol-kan $R$, komputer menjumlahkan baris W dengan seluruh baris kendala. Konsekuensi dari penjumlahan itulah yang membuat nilai Surplus ($S$) di baris W berubah menjadi **-1**.
-        """)
         
         st.markdown("""
         **Proses Lanjutan Fase 1 (Operasi Baris Elementer):**
@@ -675,74 +673,17 @@ elif st.session_state['halaman'] == 'manual':
         """)
         
         # ------------------ TAHAP 5 ------------------
+        # PERBAIKAN: Melengkapi langkah manual yang sempat hilang
         st.write("---")
         st.write("#### TAHAP 5: Eksekusi Fase 2 (Optimasi Biaya Minimum)")
         st.write("Setelah semua kolom $R$ berhasil dibuang, fungsi harga asli ($Z$) dikembalikan ke dalam matriks untuk iterasi Fase 2.")
         
-        header_fase2 = ["Basis"] + [f"x{i+1}" for i in range(len(bahan_aktif))] + header_S + ["NK"]
-        baris_Z_fase2 = ["Z (Biaya)"] + [int(baris['Harga (Rp)']) for i, baris in bahan_aktif.iterrows()] + [0]*jml_kendala + [0]
+        header_fase2 = ["Basis"] + [f"x{i+1}" for i in range(len(bahan_aktif))] + ["S1", "S2", "S3", "S4", "NK"]
+        baris_Z_fase2 = ["Z (Biaya)"] + [int(baris['Harga (Rp)']) for i, baris in bahan_aktif.iterrows()] + [0, 0, 0, 0, 0]
         
         df_fase2 = pd.DataFrame([baris_Z_fase2], columns=header_fase2)
         st.dataframe(df_fase2, use_container_width=True, hide_index=True)
-        st.caption(" *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil.*")
-
-        # [UPGRADE 7] Penjelasan Aljabar Linear Fase 2
-        st.info("""
-        💡 **Penjelasan Aljabar Linear:** Perhatikan pada tabel Fase 2 ini, seluruh variabel buatan ($R$) **telah dihapus sepenuhnya** karena misi Fase 1 telah berhasil (menemukan daerah fisibel). Sistem memanggil kembali fungsi tujuan asli yaitu **Biaya ($Z$)**. Nilai kolom Surplus ($S$) di-set menjadi **0** karena kelebihan gizi (surplus) di dalam perut tidak memiliki harga beli di pasar.
-        """)
-        
-        # =========================================================================
-        # [INJEKSI BARU] MENAMPILKAN TABEL HASIL AKHIR (TITIK OPTIMAL) Z dan S=0
-        # =========================================================================
-        st.write("---")
-        st.write("#### Hasil Akhir Iterasi (Tabel Optimal)")
-        st.write("Setelah algoritma Eliminasi Gauss-Jordan berputar mencari titik sudut paling ekstrem (optimal), berikut adalah wujud akhir dari seluruh variabel matriks. Perhatikan bahwa $R$ telah menjadi 0 (tereliminasi) dan $S$ dikalikan dengan koefisien harga 0.")
-        
-        # Jalankan linprog secara diam-diam untuk memanggil angka final ke tabel manual
-        array_harga_m = pd.to_numeric(bahan_aktif["Harga (Rp)"]).fillna(0).values
-        matriks_gizi_m = bahan_aktif[["Kalori (Kkal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"]].apply(pd.to_numeric).fillna(0).values
-        batas_maks_m = [(0, p/100.0) for p in pd.to_numeric(bahan_aktif["Batas Maksimal (g)"]).fillna(1000).values]
-        A_kiri_m = -1 * matriks_gizi_m.T
-        B_kanan_m = -1 * np.array(batas_nutrisi)
-        sol_m = linprog(array_harga_m, A_ub=A_kiri_m, b_ub=B_kanan_m, bounds=batas_maks_m, method='highs')
-        
-        if sol_m.success:
-            hasil_gram_m = sol_m.x * 100
-            
-            realisasi_kal = sum((g/100)*k for g,k in zip(hasil_gram_m, bahan_aktif["Kalori (Kkal)"]))
-            realisasi_pro = sum((g/100)*p for g,p in zip(hasil_gram_m, bahan_aktif["Protein (g)"]))
-            realisasi_lem = sum((g/100)*l for g,l in zip(hasil_gram_m, bahan_aktif["Lemak (g)"]))
-            realisasi_kar = sum((g/100)*c for g,c in zip(hasil_gram_m, bahan_aktif["Karbohidrat (g)"]))
-            
-            surplus = [
-                max(0, realisasi_kal - batas_nutrisi[0]),
-                max(0, realisasi_pro - batas_nutrisi[1]),
-                max(0, realisasi_lem - batas_nutrisi[2]),
-                max(0, realisasi_kar - batas_nutrisi[3])
-            ]
-            
-            data_akhir = []
-            # Memasukkan Nilai Akhir Variabel X
-            for i, row in bahan_aktif.iterrows():
-                data_akhir.append([f"x{i+1} ({row['Bahan Makanan']})", f"{hasil_gram_m[i]:.1f}", f"Rp {row['Harga (Rp)']}", f"Rp {(hasil_gram_m[i]/100)*row['Harga (Rp)']:.0f}"])
-            # Memasukkan Nilai Akhir Variabel S
-            for i, s_val in enumerate(surplus):
-                data_akhir.append([f"S{i+1} (Surplus {nama_nutrisi[i].split()[0]})", f"{s_val:.1f}", "Rp 0", "Rp 0"])
-            # Memasukkan Nilai Akhir Variabel R
-            for i in range(jml_kendala):
-                data_akhir.append([f"R{i+1} (Artifisial)", "0 (Tereliminasi)", "Rp 0", "Rp 0"])
-                
-            df_akhir = pd.DataFrame(data_akhir, columns=["Variabel Keputusan", "Nilai Akhir (Titik Optimal)", "Koefisien di Baris Z", "Subtotal Biaya"])
-            st.dataframe(df_akhir, use_container_width=True, hide_index=True)
-            
-            st.markdown(f"""
-            <div style="background-color: #4F5D75; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px;">
-                <h4 style="margin:0; color: #FFFFFF;">Pembuktian Persamaan Z Akhir:</h4>
-                <h2 style="margin:0; color: #EF8354;">Z = Rp {sol_m.fun:,.0f}</h2>
-                <p style="margin:0; font-size:14px; color:#BFC0C0;">(Hasil jumlahan seluruh subtotal biaya porsi $x$, di mana surplus $S$ dikalikan 0 dan $R$ bernilai 0)</p>
-            </div>
-            """, unsafe_allow_html=True)
-        # =========================================================================
+        st.caption(" *Sistem akan melanjutkan proses iterasi/pivot pada tabel transisi ini hingga mendapatkan nilai Z (Biaya) yang paling kecil. Hasil akhir ditampilkan di Modul Kalkulator & Optimasi Gizi.*")
 
         # ------------------ TAHAP 6 ------------------
         st.write("---")
