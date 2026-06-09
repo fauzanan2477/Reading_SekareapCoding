@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io
 import plotly.graph_objects as go
 from scipy.optimize import linprog
 import uuid  
@@ -477,7 +478,7 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     # Memfilter bahan yang tidak terpilih (0 gram)
                     df_filtered = tabel_hasil[solusi.x > 0.01].copy()
                     
-                    # [Menambahkan Baris "TOTAL" di bawah tabel
+                    # Menambahkan Baris "TOTAL" di bawah tabel
                     total_row = pd.DataFrame({
                         "Bahan Makanan": ["TOTAL (REALISASI)"],
                         "Takaran Disarankan": [""],
@@ -489,17 +490,21 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     })
                     df_final = pd.concat([df_filtered, total_row], ignore_index=True)
                     
-                    # [UPGRADE 3] Visualisasi Pie Chart & Tombol Download
+                    # Visualisasi Pie Chart & Tombol Download
                     kol_tabel, kol_pie = st.columns([1.2, 1])
                     with kol_tabel:
                         st.table(df_final)
                         
-                        csv_hasil = df_filtered.to_csv(index=False).encode('utf-8')
+                        # Unduh file menjadi Excel (.xlsx)
+                        buffer = io.BytesIO()
+                        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                            df_final.to_excel(writer, index=False, sheet_name='Rekomendasi')
+                        
                         st.download_button(
-                            label="📥 Unduh Rekomendasi Dapur (CSV)",
-                            data=csv_hasil,
-                            file_name='Rekomendasi_Menu_MBG.csv',
-                            mime='text/csv',
+                            label="📥 Unduh Rekomendasi Dapur (Excel)",
+                            data=buffer.getvalue(),
+                            file_name='Rekomendasi_Menu_MBG.xlsx',
+                            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                             type="primary"
                         )
                         
