@@ -662,7 +662,7 @@ elif st.session_state['halaman'] == 'manual':
         
         # [UPGRADE 6] Penjelasan Aljabar Linear Fase 1
         st.info("""
-        💡 **Penjelasan Aljabar Linear:** Baris `W (Fase 1)` di atas sudah mengalami **Operasi Baris Elementer (OBE)** secara otomatis oleh sistem. Karena variabel $R$ berfungsi sebagai basis (identitas), nilainya **wajib 0** di baris W. Untuk menol-kan $R$, komputer menjumlahkan baris W dengan seluruh baris kendala. Konsekuensi dari penjumlahan itulah yang membuat nilai Surplus ($S$) di baris W berubah menjadi **-1**.
+        💡 **Penjelasan Singkat:** Baris `W (Fase 1)` di atas sudah mengalami **Operasi Baris Elementer (OBE)** secara otomatis oleh sistem. Karena variabel $R$ berfungsi sebagai basis (identitas), nilainya **wajib 0** di baris W. Untuk menol-kan $R$, komputer menjumlahkan baris W dengan seluruh baris kendala. Konsekuensi dari penjumlahan itulah yang membuat nilai Surplus ($S$) di baris W berubah menjadi **-1**.
         """)
         
         st.markdown("""
@@ -688,7 +688,7 @@ elif st.session_state['halaman'] == 'manual':
 
         # [UPGRADE 7] Penjelasan Aljabar Linear Fase 2
         st.info("""
-        💡 **Penjelasan Aljabar Linear:** Perhatikan pada tabel Fase 2 ini, seluruh variabel buatan ($R$) **telah dihapus sepenuhnya** karena misi Fase 1 telah berhasil (menemukan daerah fisibel). Sistem memanggil kembali fungsi tujuan asli yaitu **Biaya ($Z$)**. Nilai kolom Surplus ($S$) di-set menjadi **0** karena kelebihan gizi (surplus) di dalam perut tidak memiliki harga beli di pasar.
+        💡 **Penjelasan Singkat:** Perhatikan pada tabel Fase 2 ini, seluruh variabel buatan ($R$) **telah dihapus sepenuhnya** karena misi Fase 1 telah berhasil (menemukan daerah fisibel). Sistem memanggil kembali fungsi tujuan asli yaitu **Biaya ($Z$)**. Nilai kolom Surplus ($S$) di-set menjadi **0** karena kelebihan gizi (surplus) di dalam perut tidak memiliki harga beli di pasar.
         """)
         
         # =========================================================================
@@ -739,7 +739,7 @@ elif st.session_state['halaman'] == 'manual':
             <div style="background-color: #4F5D75; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px;">
                 <h4 style="margin:0; color: #FFFFFF;">Pembuktian Persamaan Z Akhir:</h4>
                 <h2 style="margin:0; color: #EF8354;">Z = Rp {sol_m.fun:,.0f}</h2>
-                <p style="margin:0; font-size:14px; color:#BFC0C0;">(Hasil jumlahan seluruh subtotal biaya porsi $x$, di mana surplus $S$ dikalikan 0 dan $R$ bernilai 0)</p>
+                <p style="margin:0; font-size:14px; color:#BFC0C0;">(Hasil jumlahan seluruh subtotal biaya porsi x, di mana surplus S dikalikan 0 dan R bernilai 0)</p>
             </div>
             """, unsafe_allow_html=True)
         # =========================================================================
