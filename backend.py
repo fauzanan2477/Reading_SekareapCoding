@@ -495,16 +495,12 @@ elif st.session_state['halaman'] == 'hasil_kalkulasi':
                     with kol_tabel:
                         st.table(df_final)
                         
-                        # Unduh file menjadi Excel (.xlsx)
-                        buffer = io.BytesIO()
-                        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                            df_final.to_excel(writer, index=False, sheet_name='Rekomendasi')
-                        
+                        csv_hasil = df_filtered.to_csv(index=False).encode('utf-8')
                         st.download_button(
-                            label="📥 Unduh Rekomendasi Dapur (Excel)",
-                            data=buffer.getvalue(),
-                            file_name='Rekomendasi_Menu_MBG.xlsx',
-                            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            label="📥 Unduh Rekomendasi Dapur (CSV)",
+                            data=csv_hasil,
+                            file_name='Rekomendasi_Menu_MBG.csv',
+                            mime='text/csv',
                             type="primary"
                         )
                         
